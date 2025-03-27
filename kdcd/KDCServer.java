@@ -198,4 +198,15 @@ public class KDCServer {
         }
         return hex.toString();
     }
+    private static JSONObject generateTicket(String user, String service, SecretKey sessionKey, SecretKey, serviceKey)throws Exception{
+        JSONObject ticketData = new JSONObject();
+        ticketData.put("client", user);
+        ticketData.put("service", service);
+        ticketData.put("created", System.currentTimeMillis());
+        ticketData.put("valid", validityPeriod);
+
+        byte[] iv = generateIV();
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        cipher.init(Cipher.ENCRYPT_MODE, serviceKey, new GCMParameterSpec(128, iv));
+    }
 }
