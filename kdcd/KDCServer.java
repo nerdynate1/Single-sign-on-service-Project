@@ -208,5 +208,11 @@ public class KDCServer {
         byte[] iv = generateIV();
         Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
         cipher.init(Cipher.ENCRYPT_MODE, serviceKey, new GCMParameterSpec(128, iv));
+
+        byte[] encryptedData = cipher.doFinal(sessionKey.getEncoded());
+        JSONObject ticket = new JSONObject();
+        ticket.put("iv", bytesToHex(iv));
+        ticket.put("data", bytesToHex(encryptedData));
+        return ticket;
     }
 }
