@@ -8,13 +8,20 @@
   <name>SSO</name>
   <url>http://maven.apache.org</url>
   <dependencies>
-   <dependency>
+  <dependency>
     <groupId>com.merrimack</groupId>
     <artifactId>merrimackutil</artifactId>
     <version>1.0</version>
     <scope>system</scope>
     <systemPath>${project.basedir}/lib/merrimackutil.jar</systemPath>
 </dependency>
+
+<dependency>
+    <groupId>org.bouncycastle</groupId>
+    <artifactId>bcprov-jdk18on</artifactId>
+    <version>1.78.1</version>
+</dependency>
+
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>

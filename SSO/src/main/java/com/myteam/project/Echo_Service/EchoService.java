@@ -1,4 +1,4 @@
-package com.myteam.project;
+package com.myteam.project.Echo_Service;
 import java.net.Socket;
 import java.net.ServerSocket;
 //import java.util.Scanner;
