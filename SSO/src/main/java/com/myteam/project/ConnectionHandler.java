@@ -2,7 +2,7 @@ package com.myteam.project;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.util.Scanner;
+//import java.util.Scanner;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,9 +52,13 @@ public class ConnectionHandler implements Runnable
             }
 
             String requestBody = requestBuilder.toString();
-
             JSONObject handshakeRequest = JsonIO.readObject (requestBody);
             
+            if(!isValidTicket(handshakeRequest)){
+                sendErrorResponse(outputStream, "Invalid ticket.");
+                sock.close();
+                return;
+            }
         
 
             String receivedNonce = handshakeRequest.getString("nonce");
@@ -95,5 +99,40 @@ public class ConnectionHandler implements Runnable
         {
             ex.printStackTrace();
         }    
+    }
+
+    private boolean isValidTicket (JSONObject handshakeRequest){
+        String ticketServiceName = handshakeRequest.getString("serviceName");
+
+
+        Object ticketTimeStampObj = handshakeRequest.get("timestamp");
+        long ticketTimeStamp = 0;
+
+        if(ticketTimeStampObj instanceof Long){
+            ticketTimeStamp = (Long) ticketTimeStampObj;
+        } else if (ticketTimeStampObj instanceof Integer){
+            ticketTimeStamp = ((Integer) ticketTimeStampObj).longValue();
+        }
+
+        
+        long currentTimeStamp = System.currentTimeMillis();
+
+        if(!ticketServiceName.equals(serviceName)){
+            return false;
+        }
+
+//5 minute 
+        if (currentTimeStamp - ticketTimeStamp > 5 * 60 * 1000){
+            return false;
+        }
+        return true;
+    }
+
+    private void sendErrorResponse(OutputStream outputStream, String errorMessage) throws IOException{
+        JSONObject errorResponse = new JSONObject();
+        errorResponse.put("error", errorMessage);
+        PrintWriter writer = new PrintWriter(outputStream, true);
+        writer.println(errorResponse.toString());
+
     }
 }
