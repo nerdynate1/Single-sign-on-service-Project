@@ -1,13 +1,17 @@
+package com.myteam.project;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 
 import merrimackutil.json.types.JSONObject;
 import merrimackutil.json.JsonIO;
-import merrimackutil.nonce.NonceCache;
+import merrimackutil.util.NonceCache;
 
 public class ConnectionHandler implements Runnable
 {
@@ -20,7 +24,7 @@ public class ConnectionHandler implements Runnable
      * Creates a new conneciton handler 
      * @param sock the socket associated with the connection.
      */
-    public ConnectionHandler(Socket sock)
+    public ConnectionHandler(Socket sock, String serviceName, String serviceSecret, NonceCache nonceCache)
     {
         this.sock = sock;
         this.serviceSecret = serviceSecret;
@@ -31,8 +35,7 @@ public class ConnectionHandler implements Runnable
     /**
      * How to handle the connection
      */
-    public void run() 
-    {
+    public void run(){
         try
         {
             // Setup the streams for use.
@@ -41,30 +44,54 @@ public class ConnectionHandler implements Runnable
             InputStream inputStream = sock.getInputStream();
             OutputStream outputStream = sock.getOutputStream();
 
-            JSONObject handshakeRequest = JsonIO.readObject (inputStream);
+            BufferedReader reader = new BufferedReader( new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+            StringBuilder requestBuilder = new StringBuilder();
+            String line;
+            while((line=reader.readLine())!= null){
+                requestBuilder.append(line);
+            }
+
+            String requestBody = requestBuilder.toString();
+
+            JSONObject handshakeRequest = JsonIO.readObject (requestBody);
+            
+        
 
             String receivedNonce = handshakeRequest.getString("nonce");
-            if (nonceCache.exists(recievedNonce)){
+            byte[] nonceBytes = receivedNonce.getBytes();
+            if (nonceCache.containsNonce(nonceBytes)){
                 System.out.println("Replay detected. Closing Connection.");
                 sock.close();
                 return;
             }
-            nonceCache.add(recievedNonce);
+            nonceCache.addNonce(nonceBytes);
 
             JSONObject encrptedPayload = handshakeRequest.getObject("payload");
-            String decryptedMessage = GCMDecrypt.decrypt(encrptedPayload, serviceSecret);
+            String cipherText = encrptedPayload.getString("cipherText");
+            String key = encrptedPayload.getString("key");
+            String iv = encrptedPayload.getString("iv");
+
+            GCMDecrypt decryptor = new GCMDecrypt();
+            String decryptedMessage = decryptor.decrypt(cipherText, key, iv);
 
             String upperCaseM = decryptedMessage.toUpperCase();
 
-            JSONObject ecryptedReply = GCMEncrypt.encrypt(upperCaseM, serviceSecret);
+            GCMEncrypt encryptor = new GCMEncrypt();
+            EncryptResult ecryptedReply = encryptor.encrypt(upperCaseM);
 
             JSONObject reply = new JSONObject();
             reply.put ("payload", ecryptedReply);
+
+            PrintWriter writer = new PrintWriter(outputStream, true);
+            writer.println((reply.toString()));
 
             // Close the connection.
             sock.close();
         }
         catch (IOException ex)
+        {
+            ex.printStackTrace();
+        }    catch (Exception ex)
         {
             ex.printStackTrace();
         }    

@@ -1,20 +1,24 @@
+package com.myteam.project;
 import javax.crypto.Cipher;
-import java.security.NoSuchAlgorithmException;
-import javax.crypto.NoSuchPaddingException;
+//import java.security.NoSuchAlgorithmException;
+//import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
 import javax.crypto.KeyGenerator;
-import java.security.Key;
-import java.security.InvalidKeyException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.BadPaddingException;
+//import java.security.Key;
+//import java.security.InvalidKeyException;
+//import javax.crypto.IllegalBlockSizeException;
+//import javax.crypto.BadPaddingException;
 import javax.crypto.spec.GCMParameterSpec;
 import java.security.SecureRandom;
 import java.util.Base64;
-import java.security.InvalidAlgorithmParameterException;
+//import java.security.InvalidAlgorithmParameterException;
 import java.nio.charset.StandardCharsets;
 
 public class GCMEncrypt {
+
+
 	
-	public encryptResult encrypt (String message) throws Exception{ 
+	public EncryptResult encrypt (String message) throws Exception{ 
 		int tagSize = 128;
 
 		// Get a key generator object.
@@ -41,13 +45,13 @@ public class GCMEncrypt {
 		// Finalize the message. Note: we have specified our type of character
 		// encoding for our call to getBytes() this is, on occassion important.
 		// Especially if an interface we use mixes UNICODE and ASCII.
-		String msg = " Hello World!";
-		byte[] ciphertext = aesCipher.doFinal(msg.getBytes(StandardCharsets.US_ASCII));
+		
+		byte[] ciphertext = aesCipher.doFinal(message.getBytes(StandardCharsets.UTF_8));
 
     String encodedCiphertxt = Base64.getEncoder().encodeToString(ciphertext);
     String encodedKey = Base64.getEncoder().encodeToString(aesKey.getEncoded());
 	String encodedIV = Base64.getEncoder().encodeToString(rawIv);
 		
-	return new encryptResult (encodedCiphertxt, encodedKey, encodedIV);
+	return new EncryptResult (encodedCiphertxt, encodedKey, encodedIV);
 	}
 }

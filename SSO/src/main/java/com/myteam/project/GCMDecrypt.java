@@ -1,15 +1,19 @@
+package com.myteam.project;
 import javax.crypto.Cipher;
-import java.security.NoSuchAlgorithmException;
-import javax.crypto.NoSuchPaddingException;
+//import java.security.NoSuchAlgorithmException;
+//import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
-import java.security.InvalidKeyException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.BadPaddingException;
+
+//import merrimackutil.json.types.JSONObject;
+
+//import java.security.InvalidKeyException;
+//import javax.crypto.IllegalBlockSizeException;
+//import javax.crypto.BadPaddingException;
 import java.util.Base64;
-import java.util.Scanner;
-import java.security.InvalidAlgorithmParameterException;
+//import java.util.Scanner;
+//import java.security.InvalidAlgorithmParameterException;
 import javax.crypto.spec.GCMParameterSpec;
-import javax.crypto.AEADBadTagException;
+//import javax.crypto.AEADBadTagException;
 
 public class GCMDecrypt {
 
@@ -30,8 +34,7 @@ public class GCMDecrypt {
 		SecretKeySpec aesKey = new SecretKeySpec(keyBytes, "AES");
 
 		// Put the cipher in encrypt mode with the specified key.
-		aesCipher.init(Cipher.DECRYPT_MODE, aesKey,
-		    new GCMParameterSpec(tagSize, ivBytes));
+		aesCipher.init(Cipher.DECRYPT_MODE, aesKey, new GCMParameterSpec(tagSize, ivBytes));
 
 		// Finalize the message.
 		byte[] plaintextBytes = aesCipher.doFinal(cipherTxtBytes);
